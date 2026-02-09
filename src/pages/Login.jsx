@@ -15,7 +15,7 @@ const Login = () => {
   const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
-  // DÜZELTME 1: İki ayrı input için iki ayrı referans oluşturduk
+  // İki ayrı input için iki ayrı referans
   const loginPasswordRef = useRef(null);
   const registerPasswordRef = useRef(null);
 
@@ -34,9 +34,8 @@ const Login = () => {
   };
 
   // --- ŞİFRE GÖSTER/GİZLE VE İMLEÇ AYARI ---
-  // DÜZELTME 2: Fonksiyon artık hangi inputa işlem yapacağını (targetRef) parametre olarak alıyor
   const handleTogglePassword = (e, targetRef) => {
-    e.preventDefault(); // Klavye kapanmasını ve focus kaybını önler
+    e.preventDefault();
 
     const input = targetRef.current;
     if (!input) return;
