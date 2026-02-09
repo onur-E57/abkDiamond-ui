@@ -1,3 +1,9 @@
+# ABK DIAMOND Web Projesi
+
+⚠️ **YASAL UYARI:** Bu proje **ABK DIAMOND** firması için özel olarak geliştirilmiştir. 
+Kaynak kodların izinsiz kopyalanması, ticari amaçla kullanılması veya başka bir marka altında yayınlanması yasaktır. 
+Sadece portfolyo incelemesi amacıyla paylaşılmıştır.
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
