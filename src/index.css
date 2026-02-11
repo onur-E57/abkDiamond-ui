@@ -3338,3 +3338,62 @@ header .header-icon-link svg {
 [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-gold);
 }
+
+/* ===============================================================
+   USER DROPDOWN FIX (RENK VE BOYUT DÜZELTMELERİ)
+   =============================================================== */
+
+/* 1. SORUN ÇÖZÜMÜ: Linklerin Rengi (Transparent Header'dan Etkilenmesin) */
+/* Header şeffaf olsa bile dropdown içindeki yazılar her zaman koyu olsun */
+header .user-dropdown .user-menu-link {
+  color: var(--text-color) !important;
+}
+
+/* Hover durumunda yazı rengi beyaz, arka plan gold olsun */
+header .user-dropdown .user-menu-link:hover {
+  color: #fff !important;
+  background-color: var(--primary-gold);
+}
+
+/* İkonların rengini de kontrol altına alalım */
+header .user-dropdown .user-menu-link svg {
+  color: inherit !important; /* Yazı rengi neyse o olsun */
+}
+
+header .user-dropdown .user-menu-link:hover svg {
+  color: #fff !important; /* Hoverda ikon da beyaz olsun */
+}
+
+/* 2. SORUN ÇÖZÜMÜ: Çıkış Yap Butonu (Logout Button) */
+/* Header'daki yuvarlak buton (40px) kuralını iptal etmemiz lazım */
+header .header-icons .user-dropdown button.user-menu-link {
+  width: 100% !important;   /* 40px kuralını ez */
+  height: auto !important;  /* 40px kuralını ez */
+  border-radius: 0 !important; /* Yuvarlaklığı kaldır */
+  
+  display: flex;
+  justify-content: flex-start; /* Sola yasla */
+  padding: 12px 20px;
+  
+  color: #e74c3c !important; /* Kırmızı yazı */
+  background-color: transparent;
+  
+  /* Yazının sıkışmasını önle */
+  white-space: nowrap; 
+}
+
+/* Çıkış Yap Butonu Hover Hali */
+header .header-icons .user-dropdown button.user-menu-link:hover {
+  background-color: #e74c3c !important; /* Kırmızı zemin */
+  color: #fff !important; /* Beyaz yazı */
+}
+
+header .header-icons .user-dropdown button.user-menu-link:hover svg {
+  color: #fff !important;
+}
+
+/* İkonun sıkışmasını önle */
+header .header-icons .user-dropdown button.user-menu-link svg {
+  flex-shrink: 0; 
+  margin-right: 10px;
+}
