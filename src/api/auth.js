@@ -8,6 +8,6 @@ export const login = async (credentials) => {
 
 // KAYIT OLMA
 export const register = async (userData) => {
-  const response = await api.post('/v1/users', userData);
+  const response = await api.post('/v2/customer', userData);
   return response.data;
 };

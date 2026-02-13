@@ -7,18 +7,15 @@ export default function AdminLayout() {
 
   const menuItems = [
     { name: 'Ürün Yönetimi', path: '/admin/urunler', icon: '💎' },
+    { name: 'Ürün Ekle', path: '/admin/urun-ekle', icon: '➕' }, // YENİ EKLENDİ
     { name: 'Siparişler', path: '/admin/siparisler', icon: '📦' },
     { name: 'Siteye Dön', path: '/', icon: '🏠' },
   ];
 
   return (
     <div className="admin-layout">
-      
-      {/* SOL MENÜ (SIDEBAR) */}
       <aside className="admin-sidebar">
-        <h2 className="admin-logo">
-          ABK Panel
-        </h2>
+        <h2 className="admin-logo">ABK Panel</h2>
         <ul className="admin-menu">
           {menuItems.map((item) => (
             <li key={item.path} className="admin-menu-item">
@@ -34,7 +31,6 @@ export default function AdminLayout() {
         </ul>
       </aside>
 
-      {/* SAĞ İÇERİK ALANI */}
       <main className="admin-content">
         <div className="admin-container">
           <Outlet />

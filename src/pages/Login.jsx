@@ -14,8 +14,9 @@ const Login = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
   
-  // İki ayrı input için iki ayrı referans
+  // DÜZELTME 1: İki ayrı input için iki ayrı referans oluşturduk
   const loginPasswordRef = useRef(null);
   const registerPasswordRef = useRef(null);
 
@@ -40,13 +41,10 @@ const Login = () => {
     const input = targetRef.current;
     if (!input) return;
 
-    // İmlecin mevcut konumunu al
     const cursorPosition = input.selectionStart;
 
-    // Şifreyi göster/gizle
     setShowPassword(!showPassword);
 
-    // React render ettikten sonra imleci eski yerine koy
     setTimeout(() => {
       input.setSelectionRange(cursorPosition, cursorPosition);
       input.focus();
@@ -58,12 +56,16 @@ const Login = () => {
     e.preventDefault();
     setError(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('user_role');
     
     try {
       const response = await login({ username, password });
-      
+
       if (response.token || response.accessToken) {
           localStorage.setItem('token', response.token || response.accessToken);
+          const userRole = response.role || "CUSTOMER"; 
+          localStorage.setItem('user_role', userRole); 
+
           window.dispatchEvent(new Event("auth-change"));
           toast.success("Hoş geldiniz! Giriş Başarılı.");
           navigate('/'); 
@@ -71,8 +73,6 @@ const Login = () => {
           setError("Sunucudan token alınamadı."); 
       }
     } catch (err) { 
-      console.error(err);
-      toast.error("Giriş başarısız! E-posta veya şifre hatalı.");
     }
   };
 
@@ -81,16 +81,17 @@ const Login = () => {
     e.preventDefault();
     setError(null); setSuccessMsg(null);
     
-    if(!username || !password || !email) {
-        return setError("Lütfen zorunlu alanları doldurunuz.");
+    if(!username || !password || !email || !firstName || !lastName || !phoneNumber) {
+        return setError("Lütfen tüm alanları doldurunuz.");
     }
 
     const newUser = {
-      username, password, email,
-      firstName: firstName || "Misafir",
-      lastName: lastName || "Kullanıcı",
-      phoneNumber: "5555555555",
-      active: true
+      firstName: firstName,
+      lastName: lastName,
+      username: username,
+      email: email,
+      phoneNumber: phoneNumber,
+      password: password
     };
 
     try {
@@ -100,12 +101,18 @@ const Login = () => {
       setTimeout(() => {
         setIsRightPanelActive(false);
         setSuccessMsg(null);
+        // Formu temizle
         setPassword('');
+        setUsername('');
+        setEmail('');
+        setFirstName('');
+        setLastName('');
+        setPhoneNumber('');
       }, 2000);
 
     } catch (err) { 
       console.error(err);
-      const msg = err.response?.data?.message || err.message;
+      const msg = err.response?.data?.message || err.message || "Kayıt işlemi başarısız.";
       setError('Kayıt başarısız: ' + msg); 
     }
   };
@@ -134,7 +141,7 @@ const Login = () => {
               <div className="password-wrapper">
                 <input 
                   className="auth-input" 
-                  ref={registerPasswordRef} // DÜZELTME: Kayıt ref'i kullanıldı
+                  ref={registerPasswordRef}
                   type={showPassword ? "text" : "password"} 
                   placeholder="Şifre *" 
                   value={password} 
@@ -144,7 +151,6 @@ const Login = () => {
                 <button
                   type="button"
                   className="toggle-password-btn"
-                  // DÜZELTME: onClick kaldırıldı, ref parametre olarak geçildi
                   onMouseDown={(e) => handleTogglePassword(e, registerPasswordRef)}
                   title={showPassword ? "Gizle" : "Göster"}
                 >
@@ -160,6 +166,15 @@ const Login = () => {
                 <input className="auth-input" type="text" placeholder="Ad" value={firstName} onChange={e => setFirstName(e.target.value)} />
                 <input className="auth-input" type="text" placeholder="Soyad" value={lastName} onChange={e => setLastName(e.target.value)} />
               </div>
+
+              <input 
+                className="auth-input" 
+                type="tel" 
+                placeholder="Telefon Numarası (5xxxxxxxxx) *" 
+                value={phoneNumber} 
+                onChange={e => setPhoneNumber(e.target.value)} 
+                maxLength={11}
+              />
             </div>
 
             <button className="btn-auth">Kayıt Ol</button>

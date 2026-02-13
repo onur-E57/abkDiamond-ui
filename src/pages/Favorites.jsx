@@ -8,11 +8,6 @@ export default function Favorites() {
 
   return (
     <div className="section-padding container">
-      <div className="section-title">
-        <h2>Favorilerim</h2>
-        <div className="divider"></div>
-      </div>
-
       {favorites.length > 0 ? (
         <div className="product-grid">
           {favorites.map((product) => (
@@ -82,10 +77,25 @@ export default function Favorites() {
           ))}
         </div>
       ) : (
-        <div className="text-center">
-          <h3>Favori listeniz henüz boş.</h3>
-          <p>Beğendiğiniz ürünlerdeki ❤️ ikonuna tıklayarak buraya ekleyebilirsiniz.</p>
-          <Link to="/koleksiyon" className="btn btn-primary">
+        <div className="text-center favorites-empty-container">
+          <div className="favorites-empty-icon">
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="64" 
+                height="64" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="1" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+            >
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </div>
+          <h2>Favori listeniz henüz boş.</h2>
+          <p className="favorites-empty-text">Beğendiğiniz ürünlerdeki ❤️ ikonuna tıklayarak buraya ekleyebilirsiniz.</p>
+          <Link to="/koleksiyon" className="btn btn-primary favorites-empty-btn">
             Koleksiyonu Keşfet
           </Link>
         </div>

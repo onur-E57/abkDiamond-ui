@@ -16,11 +16,12 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Favorites from './pages/Favorites';
 import Profile from './pages/Profile';
-
 import Login from './pages/Login';
 
 import 'react-toastify/dist/ReactToastify.css';
 
+import AdminRoute from './components/AdminRoute';
+import AdminAddProduct from './pages/admin/AdminAddProduct';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminProducts from './pages/admin/AdminProducts';
 
@@ -28,6 +29,7 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      
       <ToastContainer 
         position="bottom-center"
         transition={Slide}
@@ -41,22 +43,32 @@ function App() {
         pauseOnHover
         theme="dark" 
       />
-        <Routes>
-          <Route path="/" element={<><Header /><Home /><Footer /></>} />
-          <Route path="/hakkimizda" element={<><Header /><About /><Footer /></>} />
-          <Route path="/urun/:id" element={<><Header /><ProductDetail /><Footer /></>} />
-          <Route path="/sepet" element={<><Header /><Cart /><Footer /></>} />
-          <Route path="/login" element={<><Header /><Login /><Footer /></>} />
-          <Route path="/koleksiyon" element={<><Header /><Products /><Footer /></>} />
-          <Route path="/favoriler" element={<><Header /><Favorites /><Footer /></>} />
-          <Route path="/profil" element={<><Header /><Profile/><Footer /></>} />
 
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="urunler" replace />} />
-            <Route path="urunler" element={<AdminProducts />} />
-            <Route path="siparisler" element={<div>Sipariş Sayfası Yapılacak</div>} />
-          </Route>
-        </Routes>
+      <Routes>
+        
+        {/* === HERKESE AÇIK SAYFALAR === */}
+        <Route path="/" element={<><Header /><Home /><Footer /></>} />
+        <Route path="/hakkimizda" element={<><Header /><About /><Footer /></>} />
+        <Route path="/urun/:id" element={<><Header /><ProductDetail /><Footer /></>} />
+        <Route path="/sepet" element={<><Header /><Cart /><Footer /></>} />
+        <Route path="/login" element={<><Header /><Login /><Footer /></>} />
+        <Route path="/koleksiyon" element={<><Header /><Products /><Footer /></>} />
+        <Route path="/favoriler" element={<><Header /><Favorites /><Footer /></>} />
+        <Route path="/profil" element={<><Header /><Profile/><Footer /></>} />
+
+        {/* === ADMIN === */}
+        <Route element={<AdminRoute />}>
+            
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Navigate to="urunler" replace />} />
+              <Route path="urunler" element={<AdminProducts />} />
+              <Route path="urun-ekle" element={<AdminAddProduct />} />
+              <Route path="siparisler" element={<div>Henüz Sipariş Yok</div>} />
+            </Route>
+
+        </Route>
+
+      </Routes>
     </>
   );
 }
