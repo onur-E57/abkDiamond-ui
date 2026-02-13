@@ -7,9 +7,6 @@ import { toast } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
-// Favori hook'u güvenli kullanım
-// import { useFavorites } from '../context/FavoritesContext'; 
-
 export default function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -62,13 +59,14 @@ export default function ProductDetail() {
     if (!product) return null;
     const category = getCategoryName();
 
-    // YÜZÜK
+    // --- YÜZÜK SEÇENEKLERİ ---
     if (['RING', 'YUZUK', 'YÜZÜK', 'YUZUKLER', 'YÜZÜKLER'].some(c => category.includes(c))) {
       return (
-        <div className="product-option-group" style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Yüzük Ölçüsü:</label>
+        <div className="option-group">
+          <label>Yüzük Ölçüsü:</label>
+          {/* index.css: .size-select */}
           <select 
-            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+            className="size-select" 
             value={selectedOption} 
             onChange={(e) => setSelectedOption(e.target.value)}
           >
@@ -77,32 +75,28 @@ export default function ProductDetail() {
                <option key={i} value={i + 8}>{i + 8}</option>
             ))}
           </select>
-          <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>* Standart ölçü: 12-14 arasıdır.</p>
+          {/* index.css: .option-note */}
+          <p className="option-note">* Standart ölçü: 12-14 arasıdır.</p>
         </div>
       );
     }
 
-    // KOLYE / BİLEKLİK
+    // --- KOLYE / BİLEKLİK SEÇENEKLERİ ---
     const necklaceKeywords = ['NECKLACE', 'KOLYE', 'ZINCIR', 'ZİNCİR'];
     const braceletKeywords = ['BRACELET', 'BILEKLIK', 'BİLEKLİK'];
     
     if ([...necklaceKeywords, ...braceletKeywords].some(c => category.includes(c))) {
       return (
-        <div className="product-option-group" style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Uzunluk (cm):</label>
-          <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="option-group">
+          <label>Uzunluk (cm):</label>
+          {/* index.css: .option-buttons-wrapper */}
+          <div className="option-buttons-wrapper">
             {['40', '45', '50', '55', '60'].map((len) => (
               <button
                 key={len}
                 onClick={() => setSelectedOption(len)}
-                style={{
-                    padding: '8px 15px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    backgroundColor: selectedOption === len ? '#000' : '#fff',
-                    color: selectedOption === len ? '#fff' : '#000',
-                    cursor: 'pointer'
-                }}
+                // index.css: .btn-option ve .btn-option.active
+                className={`btn-option ${selectedOption === len ? 'active' : ''}`}
               >
                 {len}
               </button>
@@ -127,95 +121,96 @@ export default function ProductDetail() {
     toast.success("Sepete eklendi!");
   };
 
-  // --- HTML YAPISI (TEMPLATE CLASS'LARIYLA) ---
-  
-  // ÖNEMLİ: "page-padding-top" ve "section-padding" class'ları 
-  // içeriğin header'ın altında kalmamasını sağlar.
   return (
-    <div className="product-details-wrapper section-padding page-padding-top">
+    // index.css: .section-padding .page-padding-top
+    <div className="section-padding page-padding-top">
+      {/* index.css: .container */}
       <div className="container">
         
         {loading ? (
-             <div style={{ textAlign: 'center', padding: '50px' }}>Yükleniyor...</div>
+             <div className="loading-spinner">Yükleniyor...</div>
         ) : !product ? (
-             <div style={{ textAlign: 'center', padding: '50px' }}>Ürün bulunamadı.</div>
+             <div className="no-products"><h3>Ürün bulunamadı.</h3></div>
         ) : (
-            <div className="product-details-inner" style={{ display: 'flex', flexWrap: 'wrap', gap: '40px' }}>
+            // index.css: .detail-container
+            <div className="detail-container">
                 
-                {/* SOL TARA: RESİM */}
-                <div className="product-gallery" style={{ flex: '1', minWidth: '300px' }}>
-                    <div className="main-image" style={{ marginBottom: '20px', border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden' }}>
+                {/* --- SOL TARAF: GALERİ (.detail-gallery) --- */}
+                <div className="detail-gallery">
+                    {/* index.css: .main-image */}
+                    <div className="main-image">
                         <img 
                             src={activeImage || "/img/placeholder.png"} 
                             alt={product.name} 
-                            style={{ width: '100%', height: 'auto', display: 'block' }}
                             onError={(e) => { e.target.src = "/img/placeholder.png"; }}
                         />
                     </div>
-                    {/* Küçük Resimler */}
+                    
+                    {/* index.css: .thumbnail-list */}
                     {(product.images || product.imageUrls) && (product.images || product.imageUrls).length > 1 && (
-                        <div style={{ display: 'flex', gap: '10px', overflowX: 'auto' }}>
+                        <div className="thumbnail-list">
                             {(product.images || product.imageUrls).map((img, idx) => (
-                                <img 
+                                <div 
                                     key={idx} 
-                                    src={img} 
-                                    alt="thumb" 
+                                    // index.css: .thumbnail ve .thumbnail.active
+                                    className={`thumbnail ${activeImage === img ? 'active' : ''}`}
                                     onClick={() => setActiveImage(img)}
-                                    style={{ 
-                                        width: '80px', height: '80px', objectFit: 'cover', 
-                                        border: activeImage === img ? '2px solid #000' : '1px solid #eee',
-                                        cursor: 'pointer', borderRadius: '4px'
-                                    }} 
-                                />
+                                >
+                                    <img src={img} alt="thumb" />
+                                </div>
                             ))}
                         </div>
                     )}
                 </div>
 
-                {/* SAĞ TARAF: BİLGİLER */}
-                <div className="product-info" style={{ flex: '1', minWidth: '300px' }}>
-                    <h1 style={{ fontSize: '28px', marginBottom: '10px', fontFamily: 'serif' }}>{product.name || product.title}</h1>
+                {/* --- SAĞ TARAF: BİLGİLER (.detail-info) --- */}
+                <div className="detail-info">
+                    {/* index.css: .detail-title */}
+                    <h1 className="detail-title">{product.name || product.title}</h1>
                     
-                    <div className="price-area" style={{ fontSize: '24px', fontWeight: 'bold', color: '#c5a059', marginBottom: '20px' }}>
+                    {/* index.css: .detail-price */}
+                    <div className="detail-price">
                         {product.price?.toLocaleString()} TL
                         {product.oldPrice && (
-                            <span style={{ fontSize: '16px', color: '#999', textDecoration: 'line-through', marginLeft: '15px' }}>
+                            <span style={{ fontSize: '0.6em', textDecoration: 'line-through', color: '#999', marginLeft: '10px', fontWeight: '400' }}>
                                 {product.oldPrice.toLocaleString()} TL
                             </span>
                         )}
                     </div>
 
-                    <p style={{ lineHeight: '1.6', color: '#555', marginBottom: '30px' }}>
-                        {product.description || "Bu ürün özel işçilikle üretilmiştir."}
-                    </p>
+                    {/* index.css: .detail-description */}
+                    <div className="detail-description">
+                        {product.description || "Bu ürün özel işçilikle üretilmiştir ve sertifikalıdır."}
+                    </div>
 
+                    {/* Seçenekler (.option-group vb.) */}
                     {renderProductOptions()}
 
-                    <div className="action-buttons" style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
+                    {/* index.css: .purchase-actions */}
+                    <div className="purchase-actions">
+                        {/* index.css: .btn-add-cart */}
                         <button 
-                            className="btn btn-primary" 
+                            className="btn-add-cart" 
                             onClick={handleAddToCart}
-                            style={{ flex: '1', padding: '15px', backgroundColor: '#000', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
                         >
                             SEPETE EKLE
                         </button>
                         
+                        {/* index.css: .btn-whatsapp */}
                         <a 
                             href="https://wa.me/905555555555" 
                             target="_blank" 
                             rel="noreferrer"
-                            style={{ 
-                                width: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                                border: '1px solid #25D366', color: '#25D366', borderRadius: '4px', fontSize: '24px' 
-                            }}
+                            className="btn-whatsapp"
                         >
                             <FontAwesomeIcon icon={faWhatsapp} />
                         </a>
                     </div>
                     
-                    <div style={{ marginTop: '40px', borderTop: '1px solid #eee', paddingTop: '20px', fontSize: '14px', color: '#777' }}>
-                        <p>✓ Ücretsiz Kargo</p>
-                        <p>✓ Sertifikalı Ürün</p>
+                    {/* index.css: .product-meta-info */}
+                    <div className="product-meta-info">
+                        <p><i className="icon-check"></i> ✓ Ücretsiz Kargo</p>
+                        <p><i className="icon-check"></i> ✓ Sertifikalı Ürün</p>
                     </div>
                 </div>
 
