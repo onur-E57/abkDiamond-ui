@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
-
 import '../index.css';
-
 import { useCart } from '../context/CartContext';
-import api from '../api/axiosConfig';
+// api importunu kaldırdık çünkü mock yapıda kullanmıyoruz
 import { getFilteredProducts } from '../api/product';
 import MouseDetecter from '../components/MouseDetecter';
 
@@ -16,26 +13,36 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { totalItems } = useCart();
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  
+  // Theme state güvenli başlatma (SSR hatasını önler)
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') || 'light';
+    }
+    return 'light';
+  });
+
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  
   const searchInputRef = useRef(null);
   const searchRef = useRef(null);
-
   const userMenuRef = useRef(null);
+  
   const navigate = useNavigate();
   const location = useLocation();
   
-  const diamondIcon =  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                      </svg>;
+  const diamondIcon = (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+    </svg>
+  );
 
   const isHomePage = location.pathname === '/';
-  
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -46,61 +53,60 @@ export default function Header() {
     setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
-  //REFRESH TOKEN USAGE
-  const fetchUserProfile = async () => {
-  try {
-    const response = await api.get('/user/profile'); 
-    console.log(response.data);
-  } catch (error) {
-    console.error("Hata:", error);
-  }
-};
+  // --- ARAMA MOTORU (MOCK) ---
+  useEffect(() => {
+      const delayDebounce = setTimeout(async () => {
+          if (searchQuery.length >= 2) { 
+              setIsSearching(true);
+              try {
+                  // Mock API'miz artık frontend filtrelemesi yapıyor ama burada
+                  // simule etmek için getFilteredProducts çağırıyoruz.
+                  // Mock api/product.js içindeki getFilteredProducts tüm listeyi dönüyor olabilir.
+                  // O yüzden burada gelen datayı kendimiz filtreleyelim:
+                  
+                  const data = await getFilteredProducts(); // Tüm mock ürünleri getir
+                  
+                  // Gelen veriyi güvenli şekilde diziye çevir
+                  const allProducts = Array.isArray(data) ? data : (data.content || []);
+                  
+                  // Frontend tarafında filtrele
+                  const filtered = allProducts.filter(p => 
+                    (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                    (p.title && p.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                  );
 
+                  setSearchResults(filtered);
+              } catch (error) {
+                  console.error("Arama hatası:", error);
+                  setSearchResults([]);
+              } finally {
+                  setIsSearching(false);
+              }
+          } else {
+              setSearchResults([]);
+          }
+      }, 500);
 
-useEffect(() => {
-    const delayDebounce = setTimeout(async () => {
-        if (searchQuery.length >= 2) { // En az 2 harf yazınca ara
-            setIsSearching(true);
-            try {
-                // API'ye "name" parametresiyle istek atıyoruz
-                const data = await getFilteredProducts({ name: searchQuery });
-                setSearchResults(Array.isArray(data) ? data : []);
-            } catch (error) {
-                console.error("Arama hatası:", error);
-                setSearchResults([]);
-            } finally {
-                setIsSearching(false);
-            }
-        } else {
-            setSearchResults([]);
-        }
-    }, 500); // 500ms bekle
+      return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
 
-    return () => clearTimeout(delayDebounce);
-}, [searchQuery]);
-
-// SCROLL DİNLEYİCİSİ (GÜNCELLENMİŞ VERSİYON)
-    useEffect(() => {
-    // Eğer Ana Sayfada DEĞİLSEK, header hep dolu (scrolled) olsun ve işlem bitsin.
+  // --- SCROLL DİNLEYİCİSİ ---
+  useEffect(() => {
     if (!isHomePage) {
       setScrolled(true);
       return; 
     }
 
-    // Sadece Ana Sayfa için scroll dinleyicisi
     const handleScroll = () => {
-      // 100px'den fazla aşağı inilirse scrolled true olsun
       setScrolled(window.scrollY > 100);
     };
 
     handleScroll();
-
     window.addEventListener('scroll', handleScroll);
-    
-    // Temizlik (Cleanup)
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isHomePage]);
 
+  // --- ARAMA FOCUS ---
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
       setTimeout(() => {
@@ -109,47 +115,41 @@ useEffect(() => {
     }
   }, [isSearchOpen]);
 
-
-    //LOGIN CHECKLEME
-    useEffect(() => {
+  // --- LOGIN KONTROLÜ (LOCALSTORAGE) ---
+  useEffect(() => {
     const checkLogin = () => {
       const token = localStorage.getItem('token');
       setIsLoggedIn(!!token);
     };
 
     checkLogin();
-
     window.addEventListener('auth-change', checkLogin);
-
     return () => {
       window.removeEventListener('auth-change', checkLogin);
     };
   }, []);
 
-
+  // --- DIŞARI TIKLAMA KONTROLÜ ---
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
       }
       if (searchRef.current && !searchRef.current.contains(event.target)) {
-        if (!event.target.closest('button[aria-label="Arama"]')) {
-           setIsSearchOpen(false);
-        }
+        // Arama butonuna tıklanırsa kapatma (o zaten toggle yapıyor)
+        const searchBtn = document.getElementById('search-toggle-btn');
+        if (searchBtn && searchBtn.contains(event.target)) return;
+        
+        setIsSearchOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isSearchOpen]);
+  }, []);
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    alert("Arama yapılıyor... (Backend bağlanacak)");
-    setIsSearchOpen(false);
-  };
 
-  // Çıkış Yap Fonksiyonu ========>
+  // --- ÇIKIŞ YAP ---
   const handleLogout = () => {
     Swal.fire({
       title: 'Çıkış Yapılıyor',
@@ -164,18 +164,15 @@ useEffect(() => {
       color: '#fff',
       iconColor: '#c5a059'
     }).then((result) => {
-
       if (result.isConfirmed) {
         localStorage.removeItem('token'); 
         window.dispatchEvent(new Event("auth-change")); 
         setIsUserMenuOpen(false);
-        
         toast.info(
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            Başarıyla çıkış yapıldı. Tekrar bekleriz! {diamondIcon}
+            Başarıyla çıkış yapıldı. Tekrar bekleriz!
           </div>
         );
-        
         navigate('/'); 
       }
     });
@@ -210,10 +207,8 @@ useEffect(() => {
         >
         </div>
 
-          {/* Arama Inputu ve Sonuçlar */}
+        {/* ========== ARAMA ALANI ========== */}
         <div ref={searchRef} className={`header-inline-search ${isSearchOpen ? 'active' : ''}`}>
-
-          {/* INPUT ALANI */}
           <input 
             ref={searchInputRef}
             type="text" 
@@ -223,7 +218,6 @@ useEffect(() => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           
-          {/* KAPAT BUTONU */}
           <button 
             type="button" 
             className="inline-search-close"
@@ -237,7 +231,7 @@ useEffect(() => {
             &times;
           </button>
 
-          {/* --- ARAMA SONUÇLARI DROPDOWN --- */}
+          {/* --- ARAMA SONUÇLARI --- */}
           {searchQuery.length >= 2 && (
             <div className="search-results-dropdown">
               {isSearching ? (
@@ -252,22 +246,24 @@ useEffect(() => {
                                       onClick={() => {
                                         setIsSearchOpen(false);
                                         setSearchQuery('');
+                                        setSearchResults([]);
                                       }}
                                       className="search-result-item"
                                   >
                                       <img 
-                                          src={product.imageUrls?.[0] || "/img/placeholder.png"} 
-                                          alt={product.name} 
+                                          src={product.imageUrls?.[0] || product.image || "/img/placeholder.png"} 
+                                          alt={product.name || product.title} 
+                                          onError={(e) => { e.target.src = "/img/placeholder.png"; }}
                                       />
                                       <div className="search-result-info">
-                                          <span className="result-name">{product.name}</span>
+                                          <span className="result-name">{product.name || product.title}</span>
                                           <span className="result-price">{product.price?.toLocaleString()} TL</span>
                                       </div>
                                   </Link>
                               </li>
                           ))}
                           <li className="search-view-all">
-                              <Link to={`/koleksiyon`} onClick={() => setIsSearchOpen(false)}>
+                              <Link to={`/koleksiyon?search=${searchQuery}`} onClick={() => setIsSearchOpen(false)}>
                                   Tüm Sonuçları Gör ({searchResults.length})
                               </Link>
                           </li>
@@ -280,6 +276,7 @@ useEffect(() => {
           )}
         </div>
 
+        {/* ========== MOBİL MENÜ ========== */}
         <aside className={`mobile-menu-drawer ${isNavOpen ? 'active' : ''}`}>
           <button 
               className="nav-close-btn" 
@@ -290,10 +287,9 @@ useEffect(() => {
           </button>
           {navLinks}
 
-          {/* --- MOBİL İÇİN TEMA SWITCH --- */}
+          {/* MOBİL TEMA SWITCH */}
           <div className="mobile-theme-control">
             <span>Görünüm Modu</span>
-            
             <div 
               className="theme-switch" 
               onClick={toggleTheme} 
@@ -324,8 +320,9 @@ useEffect(() => {
           </div>
         </aside>
         
+        {/* ========== SAĞ İKONLAR ========== */}
         <div className="header-icons">
-          {/* MASAÜSTÜ TEMA SWITCH (Mobilde CSS ile gizlenir) */}
+            {/* MASAÜSTÜ TEMA SWITCH */}
             <div className="theme-switch" onClick={toggleTheme}>
               <div className="switch-handle">
                 {theme === 'light' ? (
@@ -336,39 +333,29 @@ useEffect(() => {
               </div>
             </div>
 
-          <button aria-label="Arama" onClick={() => setIsSearchOpen(true)} >
-            <svg width="20" height="20" fill="currentColor"><use href="/sprite.svg#search-icon" /></svg>
+          <button id="search-toggle-btn" aria-label="Arama" onClick={() => setIsSearchOpen(true)} >
+             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+             </svg>
           </button>
 
-          {/* --- KULLANICI MENÜSÜ --- */}
-            <div className="user-menu-wrapper" ref={userMenuRef}>
-              
+          {/* KULLANICI MENÜSÜ */}
+          <div className="user-menu-wrapper" ref={userMenuRef}>
               <button 
                 aria-label="Kullanıcı Menüsü" 
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 className={`user-menu-btn ${isLoggedIn ? 'logged-in' : ''}`}
               >
-                 <svg width="20" height="20" fill="currentColor"><use href="/sprite.svg#login-icon" /></svg>
+                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                 </svg>
               </button>
 
-              {/* Açılır Menü */}
               <div className={`user-dropdown ${isUserMenuOpen ? 'active' : ''}`}>
-                
                 {isLoggedIn ? (
-                  // --- GİRİŞ YAPMIŞ KULLANICI ---
                   <>
-
-                  {/* 
-                    ----YÖNETİM PANELİ GEÇİCİ OLARAK DEVRE DIŞI
-
-                    <Link to="/admin/urunler" className="user-menu-link" onClick={() => setIsUserMenuOpen(false)}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:'10px'}}>
-                        <path d="M6 3h12l4 6-10 13L2 9z"></path>
-                      </svg>
-                      Yönetim Paneli
-                    </Link>
-                  */}
-
                     <Link to="/profil" className="user-menu-link" onClick={() => setIsUserMenuOpen(false)}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:'10px'}}>
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -376,16 +363,6 @@ useEffect(() => {
                       </svg>
                       Profilim
                     </Link>
-
-                    <Link to="/favoriler" className="user-menu-link" onClick={() => setIsUserMenuOpen(false)}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:'10px'}}>
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                      </svg>
-                      Favorilerim
-                    </Link>
-
-
-
                     <button onClick={handleLogout} className="user-menu-link logout">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:'10px'}}>
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -396,7 +373,6 @@ useEffect(() => {
                     </button>
                   </>
                 ) : (
-                  // --- MİSAFİR KULLANICI ---
                   <>
                     <Link to="/login" className="user-menu-link" onClick={() => setIsUserMenuOpen(false)}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:'10px'}}>
@@ -406,18 +382,10 @@ useEffect(() => {
                       </svg>
                       Giriş Yap
                     </Link>
-
-                    <Link to="/login" className="user-menu-link" onClick={() => setIsUserMenuOpen(false)}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:'10px'}}>
-                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-                      </svg>
-                      Kayıt Ol
-                    </Link>
                   </>
                 )}
-                
               </div>
-            </div>
+          </div>
 
           <Link to="/sepet" className="header-icon-link" aria-label="Sepetim">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
