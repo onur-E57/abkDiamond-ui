@@ -1,4 +1,4 @@
-import { mockProducts, mockCategories } from '../data/mockData';
+import { mockProducts, mockCategories } from '../data';
 
 const simulateApiCall = (data) => {
   return new Promise((resolve) => {
