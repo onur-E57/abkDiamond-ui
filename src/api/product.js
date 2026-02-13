@@ -1,7 +1,5 @@
-// src/api/product.js (veya services/product.js)
-import { mockProducts, mockCategories } from '../data'; // Yolunu kendine göre ayarla
+import { mockProducts, mockCategories } from '../data/mockData';
 
-// Yardımcı Fonksiyon: Gerçek API gecikmesini taklit edelim (0.5 saniye)
 const simulateApiCall = (data) => {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -10,75 +8,38 @@ const simulateApiCall = (data) => {
   });
 };
 
-// ==============================
-// 🛍️ MÜŞTERİ TARAFI (MOCK)
-// ==============================
+// ... (getProducts ve getFilteredProducts kısımları aynı kalabilir) ...
+export const getProducts = async () => await simulateApiCall(mockProducts);
 
-// Vitrin ve Koleksiyon Listesi
-export const getProducts = async (params = {}) => {
-  // Tüm ürünleri döndür
-  return await simulateApiCall(mockProducts);
-};
-
-// Filtreleme ve Sayfalama
 export const getFilteredProducts = async (filters = {}) => {
-  // Gerçek backend gibi sayfalama yapısı (Pagination) dönmemiz gerekebilir
-  // Eğer UI direkt array bekliyorsa mockProducts dön.
-  // Eğer UI "content" içinde bekliyorsa aşağıdaki yapıyı kullan:
-  
-  const mockResponse = {
-    content: mockProducts, // Ürün listesi
-    totalPages: 1,
-    totalElements: mockProducts.length,
-    size: mockProducts.length,
-    number: 0
-  };
-
-  // Eğer sadece array dönüyorsa direkt: return await simulateApiCall(mockProducts);
-  return await simulateApiCall(mockResponse); 
+    // Filtreleme mantığı frontend'de yapılıyor ama burası tüm listeyi dönmeli
+    return await simulateApiCall(mockProducts);
 };
 
-// Ürün Detayı
+// --- ÖNEMLİ DÜZELTME BURADA ---
 export const getProductById = async (id) => {
-  // ID string gelebilir, sayıya çevirip arayalım
-  const product = mockProducts.find((p) => p.id === Number(id));
+  console.log("Aranan ID:", id); // Konsola bak: Ne aranıyor?
+  
+  // Hem sayıya çevirip hem de metin olarak arayalım (Garanti olsun)
+  const product = mockProducts.find((p) => 
+    p.id === Number(id) || p.id.toString() === id.toString()
+  );
+
+  if (!product) {
+    console.warn("DİKKAT: Ürün Bulunamadı! Mock Data'daki ID'ler şunlar:", mockProducts.map(p => p.id));
+  } else {
+    console.log("Ürün Bulundu:", product.name || product.title);
+  }
+
   return await simulateApiCall(product);
 };
 
-// Kategorileri Getir
-export const getStoreCategories = async () => {
-    return await simulateApiCall(mockCategories);
-};
+export const getStoreCategories = async () => await simulateApiCall(mockCategories);
 
-// ==============================
-// 🔧 ADMIN TARAFI (MOCK - İşlevsiz)
-// ==============================
-// Admin fonksiyonları hata vermesin diye sahte başarılı yanıtlar döndürüyoruz.
-
-export const getAdminProducts = async () => {
-  return await simulateApiCall(mockProducts);
-};
-
-export const getCategories = async () => {
-    return await simulateApiCall(mockCategories);
-};
-
-export const createCategory = async (categoryData) => {
-  console.log("Mock Kategori Eklendi:", categoryData);
-  return await simulateApiCall({ success: true, message: "Mock: Kategori eklendi" });
-};
-
-export const addProduct = async (productData) => {
-  console.log("Mock Ürün Eklendi:", productData);
-  return await simulateApiCall({ success: true, message: "Mock: Ürün eklendi" });
-};
-
-export const deleteProduct = async (id) => {
-  console.log("Mock Ürün Silindi ID:", id);
-  return await simulateApiCall({ success: true, message: "Mock: Ürün silindi" });
-};
-
-export const updateProduct = async (productData) => {
-  console.log("Mock Ürün Güncellendi:", productData);
-  return await simulateApiCall({ success: true, message: "Mock: Ürün güncellendi" });
-};
+// ... (Admin fonksiyonları aynı kalabilir) ...
+export const getAdminProducts = async () => await simulateApiCall(mockProducts);
+export const getCategories = async () => await simulateApiCall(mockCategories);
+export const createCategory = async () => await simulateApiCall({ success: true });
+export const addProduct = async () => await simulateApiCall({ success: true });
+export const deleteProduct = async () => await simulateApiCall({ success: true });
+export const updateProduct = async () => await simulateApiCall({ success: true });
