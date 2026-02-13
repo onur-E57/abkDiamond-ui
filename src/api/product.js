@@ -1,101 +1,84 @@
-import api from './axiosConfig';
+// src/api/product.js (veya services/product.js)
+import { mockProducts, mockCategories } from '../data'; // Yolunu kendine göre ayarla
+
+// Yardımcı Fonksiyon: Gerçek API gecikmesini taklit edelim (0.5 saniye)
+const simulateApiCall = (data) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(data);
+    }, 500);
+  });
+};
 
 // ==============================
-// 🛍️ MÜŞTERİ TARAFI (PUBLIC - v2)
+// 🛍️ MÜŞTERİ TARAFI (MOCK)
 // ==============================
 
 // Vitrin ve Koleksiyon Listesi
 export const getProducts = async (params = {}) => {
-  const response = await api.post('/v2/product/filter', { 
-    ...params 
-  });
-  return response.data;
+  // Tüm ürünleri döndür
+  return await simulateApiCall(mockProducts);
 };
 
-// Filtreleme
 // Filtreleme ve Sayfalama
 export const getFilteredProducts = async (filters = {}) => {
-  try {
-    const page = filters.page || 0;
-    const size = filters.size || 12;
-    const sort = filters.sort || 'default';
+  // Gerçek backend gibi sayfalama yapısı (Pagination) dönmemiz gerekebilir
+  // Eğer UI direkt array bekliyorsa mockProducts dön.
+  // Eğer UI "content" içinde bekliyorsa aşağıdaki yapıyı kullan:
+  
+  const mockResponse = {
+    content: mockProducts, // Ürün listesi
+    totalPages: 1,
+    totalElements: mockProducts.length,
+    size: mockProducts.length,
+    number: 0
+  };
 
-    // 1. Body Verisi Hazırla
-    // Sayfa bilgilerini (page, size) BURAYA DA EKLİYORUZ
-    // (Önceki kodda delete ile siliyorduk, şimdi silmiyoruz)
-    const bodyData = { 
-      ...filters,
-      page: page,
-      size: size,
-      sort: sort
-    };
-
-    // 2. İsteği At (Hem Body'de hem URL'de gönderiyoruz)
-    const response = await api.post('/v2/product/filter', bodyData, {
-      params: {
-        page: page,
-        size: size,
-        sort: sort
-      }
-    });
-    
-    return response.data;
-  } catch (error) {
-    console.error("Ürünler çekilemedi:", error);
-    return []; 
-  }
+  // Eğer sadece array dönüyorsa direkt: return await simulateApiCall(mockProducts);
+  return await simulateApiCall(mockResponse); 
 };
 
-// Ürün Detayı (Backend 'productId' bekliyor)
+// Ürün Detayı
 export const getProductById = async (id) => {
-  const response = await api.get('/v2/product/search-by-id', { 
-    params: { productId: id } 
-  });
-  return response.data;
+  // ID string gelebilir, sayıya çevirip arayalım
+  const product = mockProducts.find((p) => p.id === Number(id));
+  return await simulateApiCall(product);
 };
 
+// Kategorileri Getir
 export const getStoreCategories = async () => {
-    const response = await api.get('/v2/category'); 
-    return response.data;
+    return await simulateApiCall(mockCategories);
 };
-// ==============================
-// 🔧 ADMIN TARAFI (PRIVATE - v1)
-// ==============================
 
-// 1. Admin Ürün Listesi
+// ==============================
+// 🔧 ADMIN TARAFI (MOCK - İşlevsiz)
+// ==============================
+// Admin fonksiyonları hata vermesin diye sahte başarılı yanıtlar döndürüyoruz.
+
 export const getAdminProducts = async () => {
-  const response = await api.get('/v1/product');
-  return response.data;
+  return await simulateApiCall(mockProducts);
 };
 
-// 2. Kategorileri Getir (Admin Paneli İçin)
 export const getCategories = async () => {
-    const response = await api.get('/v1/category'); 
-    return response.data;
+    return await simulateApiCall(mockCategories);
 };
 
-// 3. Kategori Ekle
 export const createCategory = async (categoryData) => {
-  const response = await api.post('/v1/category', categoryData); 
-  return response.data;
+  console.log("Mock Kategori Eklendi:", categoryData);
+  return await simulateApiCall({ success: true, message: "Mock: Kategori eklendi" });
 };
 
-// 4. Ürün Ekle
 export const addProduct = async (productData) => {
-  const response = await api.post('/v1/product', productData);
-  return response.data;
+  console.log("Mock Ürün Eklendi:", productData);
+  return await simulateApiCall({ success: true, message: "Mock: Ürün eklendi" });
 };
 
-// 5. Ürün Sil
 export const deleteProduct = async (id) => {
-  const response = await api.delete(`/v1/product`, {
-    params: { productId: id } 
-  });
-  return response.data;
+  console.log("Mock Ürün Silindi ID:", id);
+  return await simulateApiCall({ success: true, message: "Mock: Ürün silindi" });
 };
 
-// 6. Ürün Güncelle (YENİ)
 export const updateProduct = async (productData) => {
-  const response = await api.put('/v1/product', productData);
-  return response.data;
+  console.log("Mock Ürün Güncellendi:", productData);
+  return await simulateApiCall({ success: true, message: "Mock: Ürün güncellendi" });
 };

@@ -61,7 +61,7 @@ export default function Cart() {
                   <div className="cart-product-info">
                     <Link to={`/urun/${item.id}`} className="cart-img-wrapper">
                       <img 
-                          src={item.imageUrl || item.img || "/img/placeholder.png"} 
+                          src={item.imageUrl || item.imageUrls || item.img || "/img/placeholder.png"}  
                           alt={item.name} 
                       />
                     </Link>
